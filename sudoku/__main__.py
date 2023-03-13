@@ -273,7 +273,6 @@ class App(object):
             count = 1
             for subrow in range(0, 3):
                 for subcol in range(0, 3):
-                    # TODO: maybe change *counter* vars to share same variables so we don't need these ifs
                     colour = COL_TEXT2
                     if self._checking == "ROW" and self._check_cell_row == row and self._counter_col == col:
                         colour = COL_TEXT3
