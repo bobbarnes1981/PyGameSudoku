@@ -11,10 +11,15 @@ COL_BACK = (0,0,0)
 COL_TEXT = (25,25,112)
 COL_YELLOW = (255,255,0)
 DELAY = 0.5
-CELL_THICKNESS = 1
-GRID_THICKNESS = 5
+CELL_THICKNESS = 5
+GRID_THICKNESS = 11
 
-# TODO: incorporate cell wall thickness into render
+# TODO: incorporate grid wall thickness into render
+
+if CELL_THICKNESS%2 == 0:
+    raise Exception("CELL_THICKNESS must be odd")
+if GRID_THICKNESS%2 == 0:
+    raise Exception("GRID_THICKNESS must be odd")
 
 TEST_DATA = [
     [0,5,0,3,0,0,0,6,0],
@@ -32,7 +37,7 @@ class App(object):
     def __init__(self):
         self._running = True
         self._display_surf = None
-        self._size = ((cell_width*9*3), (cell_height*9*3))
+        self._size = ((cell_width*9*3)+(8*CELL_THICKNESS), (cell_height*9*3)+(8*CELL_THICKNESS))
         self._grid = Grid()
         self._time = time.time()
         self._counter = 0
@@ -164,8 +169,8 @@ class App(object):
         self.draw_numbers()
         pygame.display.update()
     def draw_check_cell(self):
-        left = cell_width*3*self._check_cell_col
-        top = cell_height*3*self._check_cell_row
+        left = (cell_width*3*self._check_cell_col)+(self._check_cell_col*CELL_THICKNESS)
+        top = (cell_height*3*self._check_cell_row)+(self._check_cell_row*CELL_THICKNESS)
         width = cell_width*3
         height = cell_height*3
         pygame.draw.rect(self._display_surf, COL_YELLOW, (left, top, width, height), 2)
@@ -173,34 +178,34 @@ class App(object):
         if not self._render_check:
             return
         if self._checking == "COL":
-            left = cell_width*3*self._check_cell_col
-            top = cell_height*3*self._counter_row
+            left = (cell_width*3*self._check_cell_col)+(self._check_cell_col*CELL_THICKNESS)
+            top = (cell_height*3*self._counter_row)+(self._counter_row*CELL_THICKNESS)
         if self._checking == "ROW":
-            left = cell_width*3*self._counter_col
-            top = cell_height*3*self._check_cell_row
+            left = (cell_width*3*self._counter_col)+(self._counter_col*CELL_THICKNESS)
+            top = (cell_height*3*self._check_cell_row)+(self._check_cell_row*CELL_THICKNESS)
         if self._checking == "SUB":
             (row_val, col_val) = self.get_sub_vals()
-            left = cell_width*3*col_val
-            top = cell_height*3*row_val
+            left = (cell_width*3*col_val)+(col_val*CELL_THICKNESS)
+            top = (cell_height*3*row_val)+(row_val*CELL_THICKNESS)
         width = cell_width*3
         height = cell_height*3
         pygame.draw.rect(self._display_surf, (0,255,0), (left, top, width, height), 0)
     def draw_lines(self):
-        right = (cell_width*9*3)
-        bottom = (cell_height*3*9)
+        right = (cell_width*9*3)+(8*CELL_THICKNESS)
+        bottom = (cell_height*3*9)+(8*CELL_THICKNESS)
         for row in range(1, 9):
-            v_line = (cell_height*3*row)
-            pygame.draw.line(self._display_surf, (255,0,0), (0,v_line), (right,v_line), GRID_THICKNESS if row % 3 == 0 else CELL_THICKNESS)
+            v_line = (cell_height*3*row)+(row*CELL_THICKNESS)-(CELL_THICKNESS//2)-1
+            pygame.draw.line(self._display_surf, (255,0,0), (0,v_line), (right,v_line), CELL_THICKNESS if row % 3 == 0 else CELL_THICKNESS)
             for col in range(1, 9):
-                h_line = (cell_width*3*col)
-                pygame.draw.line(self._display_surf, (255,0,0), (h_line, 0), (h_line,bottom), GRID_THICKNESS if col % 3 == 0 else CELL_THICKNESS)
+                h_line = (cell_width*3*col)+(col*CELL_THICKNESS)-(CELL_THICKNESS//2)-1
+                pygame.draw.line(self._display_surf, (255,0,0), (h_line, 0), (h_line,bottom), CELL_THICKNESS if col % 3 == 0 else CELL_THICKNESS)
     def draw_numbers(self):
         for row in range(0, 9):
             for col in range(0, 9):
                 self.draw_number(row, col)
     def draw_number(self, row, col):
-        x = (cell_width*3*col)
-        y = (cell_height*3*row)
+        x = (cell_width*3*col)+(col*CELL_THICKNESS)
+        y = (cell_height*3*row)+(row*CELL_THICKNESS)
         if self._grid.is_complete_cell(row, col):
             x += 15
             y += 10
@@ -219,14 +224,13 @@ class App(object):
         for row in range(0, 9):
             for col in range(0, 9):
                 self.draw_cell(row, col)
-            #exit()
     def draw_cell(self, row, col):
         if self._grid.is_complete_cell(row, col):
             colour = (0,0,0)
         else:
             colour = (80,80,80)
-        left = (cell_width*3*(col))
-        top = (cell_height*3*(row))
+        left = (cell_width*3*(col))+(col*CELL_THICKNESS)
+        top = (cell_height*3*(row))+(row*CELL_THICKNESS)
         width = cell_width*3
         height = cell_height*3
         pygame.draw.rect(self._display_surf, colour, (left, top, width, height), 0)
