@@ -3,18 +3,41 @@ import pygame
 import time
 from pygame.locals import *
 
+SOLARIZED_BASE03 = (0,43,54)
+SOLARIZED_BASE02 = (7,54,66)
+SOLARIZED_BASE01 = (88,110,117)
+SOLARIZED_BASE00 = (101,123,131)
+SOLARIZED_BASE0 = (131,148,150)
+SOLARIZED_BASE1 = (147,161,161)
+SOLARIZED_BASE2 = (238,232,213)
+SOLARIZED_BASE3 = (253,246,227)
+SOLARIZED_YELLOW = (181,137,0)
+SOLARIZED_ORANGE = (203,75,22)
+SOLARIZED_RED = (220,50,47)
+SOLARIZED_MAGENTA = (211,54,130)
+SOLARIZED_VIOLET = (108,113,196)
+SOLARIZED_BLUE = (38,139,210)
+SOLARIZED_CYAN = (42,161,152)
+SOLARIZED_GREEN = (133,153,0)
+
 logging.basicConfig(level=logging.INFO)
 
-cell_width = 20
-cell_height = 20
-COL_BACK = (0,0,0)
-COL_TEXT = (25,25,112)
-COL_CHECK = (0,255,0)
-COL_CHECKING = (255,255,0)
-COL_AREA = (255,255,255)
+CELL_WIDTH = 20
+CELL_HEIGHT = 20
+
+COL_WHITE = (255,255,255)
+COL_LINE = SOLARIZED_BASE01
+COL_BACK = SOLARIZED_BASE03
+COL_TEXT = SOLARIZED_BASE0
+COL_CHECK = SOLARIZED_BASE02
+COL_CHECKING = SOLARIZED_MAGENTA
+COL_AREA = SOLARIZED_YELLOW
+
 DELAY = 0.25
 CELL_THICKNESS = 3
 GRID_THICKNESS = 7
+AREA_THICKNESS = 3
+SELECTED_THICKNESS = 3
 
 # TODO: incorporate grid wall thickness into render
 
@@ -39,8 +62,8 @@ class App(object):
     def __init__(self):
         self._running = True
         self._display_surf = None
-        self._width = (cell_width*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
-        self._height = (cell_height*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
+        self._width = (CELL_WIDTH*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
+        self._height = (CELL_HEIGHT*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
         self._size = (self._width, self._height)
         self._grid = Grid()
         self._time = time.time()
@@ -168,69 +191,69 @@ class App(object):
         row_val = row_offset + self._counter_sub_row
         return (row_val, col_val)
     def on_render(self):
-        self._display_surf.fill(COL_BACK)
+        self._display_surf.fill(COL_WHITE)
         self.draw_cells()
         self.draw_lines()
         self.draw_checking()
-        self.draw_check_cell()
         self.draw_numbers()
         self.draw_checking_area()
+        self.draw_selected_cell()
         pygame.display.update()
-    def draw_check_cell(self):
-        left = (cell_width*3*self._check_cell_col)+(self._check_cell_col*CELL_THICKNESS)+((self._check_cell_col//3)*(GRID_THICKNESS-CELL_THICKNESS))
-        top = (cell_height*3*self._check_cell_row)+(self._check_cell_row*CELL_THICKNESS)+((self._check_cell_row//3)*(GRID_THICKNESS-CELL_THICKNESS))
-        width = cell_width*3
-        height = cell_height*3
-        pygame.draw.rect(self._display_surf, COL_CHECKING, (left, top, width, height), 2)
+    def draw_selected_cell(self):
+        left = (CELL_WIDTH*3*self._check_cell_col)+(self._check_cell_col*CELL_THICKNESS)+((self._check_cell_col//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        top = (CELL_HEIGHT*3*self._check_cell_row)+(self._check_cell_row*CELL_THICKNESS)+((self._check_cell_row//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        width = CELL_WIDTH*3
+        height = CELL_HEIGHT*3
+        pygame.draw.rect(self._display_surf, COL_CHECKING, (left, top, width, height), SELECTED_THICKNESS)
     def draw_checking(self):
         if not self._render_check:
             return
         if self._checking == "ROW":
-            left = (cell_width*3*self._counter_col)+(self._counter_col*CELL_THICKNESS)+((self._counter_col//3)*(GRID_THICKNESS-CELL_THICKNESS))
-            top = (cell_height*3*self._check_cell_row)+(self._check_cell_row*CELL_THICKNESS)+((self._check_cell_row//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            left = (CELL_WIDTH*3*self._counter_col)+(self._counter_col*CELL_THICKNESS)+((self._counter_col//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            top = (CELL_HEIGHT*3*self._check_cell_row)+(self._check_cell_row*CELL_THICKNESS)+((self._check_cell_row//3)*(GRID_THICKNESS-CELL_THICKNESS))
         if self._checking == "COL":
-            left = (cell_width*3*self._check_cell_col)+(self._check_cell_col*CELL_THICKNESS)+((self._check_cell_col//3)*(GRID_THICKNESS-CELL_THICKNESS))
-            top = (cell_height*3*self._counter_row)+(self._counter_row*CELL_THICKNESS)+((self._counter_row//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            left = (CELL_WIDTH*3*self._check_cell_col)+(self._check_cell_col*CELL_THICKNESS)+((self._check_cell_col//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            top = (CELL_HEIGHT*3*self._counter_row)+(self._counter_row*CELL_THICKNESS)+((self._counter_row//3)*(GRID_THICKNESS-CELL_THICKNESS))
         if self._checking == "SUB":
             (row_val, col_val) = self.get_sub_vals()
-            left = (cell_width*3*col_val)+(col_val*CELL_THICKNESS)+((col_val//3)*(GRID_THICKNESS-CELL_THICKNESS))
-            top = (cell_height*3*row_val)+(row_val*CELL_THICKNESS)+((row_val//3)*(GRID_THICKNESS-CELL_THICKNESS))
-        width = cell_width*3
-        height = cell_height*3
+            left = (CELL_WIDTH*3*col_val)+(col_val*CELL_THICKNESS)+((col_val//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            top = (CELL_HEIGHT*3*row_val)+(row_val*CELL_THICKNESS)+((row_val//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        width = CELL_WIDTH*3
+        height = CELL_HEIGHT*3
         pygame.draw.rect(self._display_surf, COL_CHECK, (left, top, width, height), 0)
     def draw_checking_area(self):
         if not self._render_check:
             return
         if self._checking == "ROW":
-            top = (cell_height*3*self._check_cell_row)+(self._check_cell_row*CELL_THICKNESS)+((self._check_cell_row//3)*(GRID_THICKNESS-CELL_THICKNESS))
-            pygame.draw.rect(self._display_surf, COL_AREA, (0, top, self._width, cell_height*3), 1)
+            top = (CELL_HEIGHT*3*self._check_cell_row)+(self._check_cell_row*CELL_THICKNESS)+((self._check_cell_row//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            pygame.draw.rect(self._display_surf, COL_AREA, (0, top, self._width, CELL_HEIGHT*3), AREA_THICKNESS)
         if self._checking == "COL":
-            left = (cell_width*3*self._check_cell_col)+(self._check_cell_col*CELL_THICKNESS)+((self._check_cell_col//3)*(GRID_THICKNESS-CELL_THICKNESS))
-            pygame.draw.rect(self._display_surf, COL_AREA, (left, 0, cell_width*3, self._height), 1)
+            left = (CELL_WIDTH*3*self._check_cell_col)+(self._check_cell_col*CELL_THICKNESS)+((self._check_cell_col//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            pygame.draw.rect(self._display_surf, COL_AREA, (left, 0, CELL_WIDTH*3, self._height), AREA_THICKNESS)
         if self._checking == "SUB":
             (row_val, col_val) = self.get_sub_vals()
             (row_offset, col_offset) = self.get_sub_offsets()
-            left = (cell_width*3*col_offset)+(col_offset*CELL_THICKNESS)+((col_offset//3)*(GRID_THICKNESS-CELL_THICKNESS))
-            top = (cell_height*3*row_offset)+(row_offset*CELL_THICKNESS)+((row_offset//3)*(GRID_THICKNESS-CELL_THICKNESS))
-            pygame.draw.rect(self._display_surf, COL_AREA, (left, top, (cell_width*3*3)+(CELL_THICKNESS*2), (cell_height*3*3)+(CELL_THICKNESS*2)), 1)
+            left = (CELL_WIDTH*3*col_offset)+(col_offset*CELL_THICKNESS)+((col_offset//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            top = (CELL_HEIGHT*3*row_offset)+(row_offset*CELL_THICKNESS)+((row_offset//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            pygame.draw.rect(self._display_surf, COL_AREA, (left, top, (CELL_WIDTH*3*3)+(CELL_THICKNESS*2), (CELL_HEIGHT*3*3)+(CELL_THICKNESS*2)), AREA_THICKNESS)
     def draw_lines(self):
-        right = (cell_width*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
-        bottom = (cell_height*3*9)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
+        right = (CELL_WIDTH*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
+        bottom = (CELL_HEIGHT*3*9)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
         for row in range(1, 9):
             v_thickness = GRID_THICKNESS if row % 3 == 0 else CELL_THICKNESS
-            v_line = (cell_height*3*row)+(row*CELL_THICKNESS)-(v_thickness//2)-1+((row//3)*(GRID_THICKNESS-CELL_THICKNESS))
-            pygame.draw.line(self._display_surf, (255,0,0), (0,v_line), (right,v_line), v_thickness)
+            v_line = (CELL_HEIGHT*3*row)+(row*CELL_THICKNESS)-(v_thickness//2)-1+((row//3)*(GRID_THICKNESS-CELL_THICKNESS))
+            pygame.draw.line(self._display_surf, COL_LINE, (0,v_line), (right,v_line), v_thickness)
             for col in range(1, 9):
                 h_thickness = GRID_THICKNESS if col % 3 == 0 else CELL_THICKNESS
-                h_line = (cell_width*3*col)+(col*CELL_THICKNESS)-(h_thickness//2)-1+((col//3)*(GRID_THICKNESS-CELL_THICKNESS))
-                pygame.draw.line(self._display_surf, (255,0,0), (h_line, 0), (h_line,bottom), h_thickness)
+                h_line = (CELL_WIDTH*3*col)+(col*CELL_THICKNESS)-(h_thickness//2)-1+((col//3)*(GRID_THICKNESS-CELL_THICKNESS))
+                pygame.draw.line(self._display_surf, COL_LINE, (h_line, 0), (h_line,bottom), h_thickness)
     def draw_numbers(self):
         for row in range(0, 9):
             for col in range(0, 9):
                 self.draw_number(row, col)
     def draw_number(self, row, col):
-        x = (cell_width*3*col)+(col*CELL_THICKNESS)+((col//3)*(GRID_THICKNESS-CELL_THICKNESS))
-        y = (cell_height*3*row)+(row*CELL_THICKNESS)+((row//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        x = (CELL_WIDTH*3*col)+(col*CELL_THICKNESS)+((col//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        y = (CELL_HEIGHT*3*row)+(row*CELL_THICKNESS)+((row//3)*(GRID_THICKNESS-CELL_THICKNESS))
         if self._grid.is_complete_cell(row, col):
             x += 15
             y += 10
@@ -243,7 +266,7 @@ class App(object):
             for subrow in range(0, 3):
                 for subcol in range(0, 3):
                     img = self.font_s.render(str(count if self._grid.has(row, col, count) else ' '), True, COL_TEXT)
-                    self._display_surf.blit(img, (x+(subcol*cell_width), y+(subrow*cell_height)))
+                    self._display_surf.blit(img, (x+(subcol*CELL_WIDTH), y+(subrow*CELL_HEIGHT)))
                     count+=1
     def draw_cells(self):
         for row in range(0, 9):
@@ -251,13 +274,13 @@ class App(object):
                 self.draw_cell(row, col)
     def draw_cell(self, row, col):
         if self._grid.is_complete_cell(row, col):
-            colour = (0,0,0)
+            colour = (COL_BACK)
         else:
             colour = (80,80,80)
-        left = (cell_width*3*(col))+(col*CELL_THICKNESS)+((col//3)*(GRID_THICKNESS-CELL_THICKNESS))
-        top = (cell_height*3*(row))+(row*CELL_THICKNESS)+((row//3)*(GRID_THICKNESS-CELL_THICKNESS))
-        width = cell_width*3
-        height = cell_height*3
+        left = (CELL_WIDTH*3*(col))+(col*CELL_THICKNESS)+((col//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        top = (CELL_HEIGHT*3*(row))+(row*CELL_THICKNESS)+((row//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        width = CELL_WIDTH*3
+        height = CELL_HEIGHT*3
         pygame.draw.rect(self._display_surf, colour, (left, top, width, height), 0)
     def on_cleanup(self):
         pygame.quit()
