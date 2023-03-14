@@ -28,4 +28,3 @@ if __name__ == '__main__':
     
     a = solver.App(data, args.delay)
     a.on_execute()
-
