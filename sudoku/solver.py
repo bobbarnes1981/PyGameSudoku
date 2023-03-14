@@ -87,6 +87,7 @@ class App(object):
         logging.info("System font: {0}".format(font_name))
         self.font_s = pygame.font.SysFont(None, 22)
         self.font_l = pygame.font.SysFont(None, 66)
+        return True
     def on_event(self, event):
         if event.type == pygame.QUIT:
             self.running = False
