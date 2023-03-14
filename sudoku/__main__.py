@@ -2,7 +2,6 @@ import argparse
 import json
 import logging
 import solver
-from pygame.locals import *
 
 if __name__ == '__main__':
     loglevels = [
