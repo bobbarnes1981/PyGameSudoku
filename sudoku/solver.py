@@ -50,7 +50,7 @@ if GRID_THICKNESS%2 == 0:
 
 class App():
     """Represents the pygame application."""
-    def __init__(self, data, delay):
+    def __init__(self, data, delay: float) -> None:
         self._delay = delay
         self._grid = sudoku.Grid()
         if len(data) != 9:
@@ -84,7 +84,7 @@ class App():
         self._complete = False
         self.font_s = None
         self.font_l = None
-    def on_init(self):
+    def on_init(self) -> bool:
         """Initialise solver."""
         pygame.init()
         pygame.display.set_caption("Sudoku")
@@ -97,7 +97,7 @@ class App():
         self.font_s = pygame.font.SysFont(None, 22)
         self.font_l = pygame.font.SysFont(None, 66)
         return True
-    def on_event(self, event):
+    def on_event(self, event: pygame.event.Event) -> None:
         """Process the pygame events."""
         if event.type == pygame.QUIT:
             self._running = False
@@ -106,7 +106,7 @@ class App():
                 self._running = False
         else:
             logging.debug(event)
-    def on_loop(self, elapsed):
+    def on_loop(self, elapsed: float) -> None:
         """When counter elapses check a cell in the grid."""
         self._counter+=elapsed
         if self._counter > self._delay:
@@ -115,7 +115,7 @@ class App():
             if not self._complete:
                 if self.check_grid():
                     self._complete = True
-    def check_grid(self):
+    def check_grid(self) -> bool:
         """Check the grid until completed."""
         logging.info('check grid')
         if self._grid.is_complete_grid():
@@ -135,7 +135,7 @@ class App():
                 if self._check_cell_row >= 9:
                     self._check_cell_row = 0
         return False
-    def check_cell(self):
+    def check_cell(self) -> bool:
         """Based on the current _checking state, check the required area of the grid."""
         logging.info('check cell %i,%i', self._check_cell_row, self._check_cell_col)
         if not self._grid.is_complete_cell(self._check_cell_row, self._check_cell_col):
@@ -173,7 +173,7 @@ class App():
             self.check_cell_sub()
         # not completed
         return False
-    def check_cell_row(self):
+    def check_cell_row(self) -> None:
         """Check the cells within the row."""
         self._counter_col += 1
         if self._counter_col >= 9:
@@ -185,7 +185,7 @@ class App():
                 self._grid.remove(self._check_cell_row,
                                   self._counter_col,
                                   self._grid.get(self._check_cell_row, self._check_cell_col))
-    def check_cell_col(self):
+    def check_cell_col(self) -> None:
         """Check the cells within the column."""
         self._counter_row += 1
         if self._counter_row >= 9:
@@ -197,7 +197,7 @@ class App():
                 self._grid.remove(self._counter_row,
                                   self._check_cell_col,
                                   self._grid.get(self._check_cell_row, self._check_cell_col))
-    def check_cell_sub(self):
+    def check_cell_sub(self) -> None:
         """Check the cells within the sub grid."""
         if self._counter_sub_col == -1:
             self._counter_sub_col+=1
@@ -222,7 +222,7 @@ class App():
         col_val = col_offset + self._counter_sub_col
         row_val = row_offset + self._counter_sub_row
         return (row_val, col_val)
-    def on_render(self):
+    def on_render(self) -> None:
         """Render the game."""
         self._display_surf.fill(COL_WHITE)
         self.draw_cells()
@@ -232,17 +232,17 @@ class App():
         self.draw_checking_area()
         self.draw_selected_cell()
         pygame.display.update()
-    def get_left_for_cell_index(self, cell_x_index):
+    def get_left_for_cell_index(self, cell_x_index: int):
         """Calculate the left pixel for the cell x index."""
         return ((CELL_WIDTH*3*cell_x_index)+
                 (cell_x_index*CELL_THICKNESS)+
                 ((cell_x_index//3)*(GRID_THICKNESS-CELL_THICKNESS)))
-    def get_top_for_cell_index(self, cell_y_index):
+    def get_top_for_cell_index(self, cell_y_index: int):
         """Calculate the top pixel for the cell y index."""
         return ((CELL_HEIGHT*3*cell_y_index)+
                 (cell_y_index*CELL_THICKNESS)+
                 ((cell_y_index//3)*(GRID_THICKNESS-CELL_THICKNESS)))
-    def draw_selected_cell(self):
+    def draw_selected_cell(self) -> None:
         """Draw border on the cell being checked."""
         if not self._render_selected:
             return
@@ -254,7 +254,7 @@ class App():
                          COL_CHECKING,
                          (left, top, width, height),
                          SELECTED_THICKNESS)
-    def draw_checking(self):
+    def draw_checking(self) -> None:
         """Set the background colour on the cell being checked."""
         if not self._render_check:
             return
@@ -271,7 +271,7 @@ class App():
         width = CELL_WIDTH*3
         height = CELL_HEIGHT*3
         pygame.draw.rect(self._display_surf, COL_CHECK, (left, top, width, height), 0)
-    def draw_checking_area(self):
+    def draw_checking_area(self) -> None:
         """Draw border on the area being checked."""
         if not self._render_check:
             return
@@ -295,7 +295,7 @@ class App():
                              COL_AREA,
                              (left, top, SUB_WIDTH, SUB_HEIGHT),
                              AREA_THICKNESS)
-    def draw_lines(self):
+    def draw_lines(self) -> None:
         """Draw the grid lines."""
         right = (CELL_WIDTH*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
         bottom = (CELL_HEIGHT*3*9)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
@@ -311,12 +311,12 @@ class App():
                                 (h_line, 0),
                                 (h_line,bottom),
                                 h_thickness)
-    def draw_numbers(self):
+    def draw_numbers(self) -> None:
         """Draw all the numbers."""
         for row in range(0, 9):
             for col in range(0, 9):
                 self.draw_number(row, col)
-    def draw_number(self, row, col):
+    def draw_number(self, row: int, col: int) -> None:
         """Draw the number for cell (row, col)."""
         left = self.get_left_for_cell_index(col)
         top = self.get_top_for_cell_index(row)
@@ -351,12 +351,12 @@ class App():
                     img_top = top+(subrow*CELL_HEIGHT)
                     self._display_surf.blit(img, (img_left, img_top))
                     count+=1
-    def draw_cells(self):
+    def draw_cells(self) -> None:
         """Draw all the cells."""
         for row in range(0, 9):
             for col in range(0, 9):
                 self.draw_cell(row, col)
-    def draw_cell(self, row, col):
+    def draw_cell(self, row: int, col: int) -> None:
         """Draw a single cell for (row, col)."""
         if self._grid.is_complete_cell(row, col):
             colour = (COL_BACK)
@@ -367,10 +367,10 @@ class App():
         width = CELL_WIDTH*3
         height = CELL_HEIGHT*3
         pygame.draw.rect(self._display_surf, colour, (left, top, width, height), 0)
-    def on_cleanup(self):
+    def on_cleanup(self) -> None:
         """Cleanup."""
         pygame.quit()
-    def on_execute(self):
+    def on_execute(self) -> None:
         """Execute application."""
         if not self.on_init():
             self._running = False
