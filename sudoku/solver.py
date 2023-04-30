@@ -1,3 +1,5 @@
+"""Solve sudoku"""
+
 import logging
 import time
 import pygame
@@ -86,7 +88,8 @@ class App():
         """Initialise solver."""
         pygame.init()
         pygame.display.set_caption("Sudoku")
-        self._display_surf = pygame.display.set_mode(self._size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self._display_surf = pygame.display.set_mode(self._size,
+                                                     pygame.HWSURFACE | pygame.DOUBLEBUF)
         self._running = True
         #self.font = pygame.font.SysFont('courier.ttf', 72)
         font_name = pygame.font.get_default_font()
@@ -231,10 +234,14 @@ class App():
         pygame.display.update()
     def get_left_for_cell_index(self, cell_x_index):
         """Calculate the left pixel for the cell x index."""
-        return (CELL_WIDTH*3*cell_x_index)+(cell_x_index*CELL_THICKNESS)+((cell_x_index//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        return ((CELL_WIDTH*3*cell_x_index)+
+                (cell_x_index*CELL_THICKNESS)+
+                ((cell_x_index//3)*(GRID_THICKNESS-CELL_THICKNESS)))
     def get_top_for_cell_index(self, cell_y_index):
         """Calculate the top pixel for the cell y index."""
-        return (CELL_HEIGHT*3*cell_y_index)+(cell_y_index*CELL_THICKNESS)+((cell_y_index//3)*(GRID_THICKNESS-CELL_THICKNESS))
+        return ((CELL_HEIGHT*3*cell_y_index)+
+                (cell_y_index*CELL_THICKNESS)+
+                ((cell_y_index//3)*(GRID_THICKNESS-CELL_THICKNESS)))
     def draw_selected_cell(self):
         """Draw border on the cell being checked."""
         if not self._render_selected:
@@ -270,15 +277,24 @@ class App():
             return
         if self._checking == "ROW":
             top = self.get_top_for_cell_index(self._check_cell_row)
-            pygame.draw.rect(self._display_surf, COL_AREA, (0, top, self._width, CELL_HEIGHT*3), AREA_THICKNESS)
+            pygame.draw.rect(self._display_surf,
+                             COL_AREA,
+                             (0, top, self._width, CELL_HEIGHT*3),
+                             AREA_THICKNESS)
         if self._checking == "COL":
             left = self.get_left_for_cell_index(self._check_cell_col)
-            pygame.draw.rect(self._display_surf, COL_AREA, (left, 0, CELL_WIDTH*3, self._height), AREA_THICKNESS)
+            pygame.draw.rect(self._display_surf,
+                             COL_AREA,
+                             (left, 0, CELL_WIDTH*3, self._height),
+                             AREA_THICKNESS)
         if self._checking == "SUB":
             (row_offset, col_offset) = self.get_sub_offsets()
             left = self.get_left_for_cell_index(col_offset)
             top = self.get_top_for_cell_index(row_offset)
-            pygame.draw.rect(self._display_surf, COL_AREA, (left, top, SUB_WIDTH, SUB_HEIGHT), AREA_THICKNESS)
+            pygame.draw.rect(self._display_surf,
+                             COL_AREA,
+                             (left, top, SUB_WIDTH, SUB_HEIGHT),
+                             AREA_THICKNESS)
     def draw_lines(self):
         """Draw the grid lines."""
         right = (CELL_WIDTH*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
@@ -316,12 +332,18 @@ class App():
             for subrow in range(0, 3):
                 for subcol in range(0, 3):
                     colour = COL_TEXT2
-                    if self._checking == "ROW" and self._check_cell_row == row and self._counter_col == col:
+                    if (self._checking == "ROW" and
+                        self._check_cell_row == row and
+                        self._counter_col == col):
                         colour = COL_TEXT3
-                    if self._checking == "COL" and self._counter_row == row and self._check_cell_col == col:
+                    if (self._checking == "COL" and
+                        self._counter_row == row and
+                        self._check_cell_col == col):
                         colour = COL_TEXT3
                     (sub_row, sub_col) = self.get_sub_vals()
-                    if self._checking == "SUB" and sub_row == row and sub_col == col:
+                    if (self._checking == "SUB" and
+                        sub_row == row and
+                        sub_col == col):
                         colour = COL_TEXT3
                     num_text = str(count if self._grid.has(row, col, count) else ' ')
                     img = self.font_s.render(num_text, True, colour)

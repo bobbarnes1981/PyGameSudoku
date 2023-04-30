@@ -1,3 +1,5 @@
+"""Sudoku solver"""
+
 import argparse
 import json
 import logging
