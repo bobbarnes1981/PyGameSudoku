@@ -50,8 +50,9 @@ if GRID_THICKNESS%2 == 0:
 
 class App():
     """Represents the pygame application."""
-    def __init__(self, data, delay: float) -> None:
+    def __init__(self, data, delay: float, exit: bool) -> None:
         self._delay = delay
+        self._exit = exit
         self._grid = sudoku.Grid()
         if len(data) != 9:
             raise Exception("Incorrect number of rows {0}"
@@ -115,6 +116,8 @@ class App():
             if not self._complete:
                 if self.check_grid():
                     self._complete = True
+                    if self._exit:
+                        self._running = False
     def check_grid(self) -> bool:
         """Check the grid until completed."""
         logging.info('check grid')

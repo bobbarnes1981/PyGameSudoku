@@ -29,6 +29,12 @@ if __name__ == '__main__':
                         default='INFO',
                         dest='logging',
                         choices=loglevels)
+    parser.add_argument('-e',
+                        '--exit',
+                        required=False,
+                        default=False,
+                        dest='exit',
+                        action='store_true')
     args = parser.parse_args()
 
     loglevel = getattr(logging, args.logging, None)
@@ -38,5 +44,5 @@ if __name__ == '__main__':
         content = f.read()
     data = json.loads(content)
 
-    a = solver.App(data, args.delay)
+    a = solver.App(data, args.delay, args.exit)
     a.on_execute()
