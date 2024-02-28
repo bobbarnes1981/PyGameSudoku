@@ -85,6 +85,10 @@ class App():
         self._complete = False
         self.font_s = None
         self.font_l = None
+    def is_complete(self):
+        return self._complete
+    def get_solution(self):
+        return self._grid.to_lists()
     def on_init(self) -> bool:
         """Initialise solver."""
         pygame.init()

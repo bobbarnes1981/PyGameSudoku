@@ -46,3 +46,15 @@ if __name__ == '__main__':
 
     a = solver.App(data, args.delay, args.exit)
     a.on_execute()
+
+    if a.is_complete():
+        output_file = "solved-{0}".format(args.file_path)
+        with open(output_file, 'w') as f:
+            rows = a.get_solution()
+            f.write('[\n')
+            for r in range(9):
+                f.write("    {0}".format(rows[r]))
+                if r < 8:
+                    f.write(',')
+                f.write('\n')
+            f.write(']\n')

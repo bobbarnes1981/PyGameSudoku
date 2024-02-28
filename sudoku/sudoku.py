@@ -55,6 +55,13 @@ class Grid():
     def remove(self, row: int, col: int, val: int) -> None:
         """Remove the number 'val' from the possible numbers for the cell (row, col)."""
         self._cells[row][col].remove(val)
+    def to_lists(self):
+        l = []
+        for row in range(0, 9):
+            l.append([])
+            for col in range(0, 9):
+                l[row].append(self._cells[row][col].get())
+        return l
 
 class Cell():
     """Represents a cell in a sudoku grid."""
