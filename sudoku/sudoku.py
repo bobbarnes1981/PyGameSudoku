@@ -52,6 +52,9 @@ class Grid():
     def get(self, row: int, col: int) -> int:
         """Get the value for the cell (row, col). Returns zero if not yet complete."""
         return self._cells[row][col].get()
+    def predefined(self, row: int, col: int) -> bool:
+        """Check if the cell is a predefined cell"""
+        return self._cells[row][col].predefined()
     def remove(self, row: int, col: int, val: int) -> None:
         """Remove the number 'val' from the possible numbers for the cell (row, col)."""
         self._cells[row][col].remove(val)
@@ -69,6 +72,7 @@ class Cell():
         self._numbers = []
         for _ in range(0, 9):
             self._numbers.append(True)
+        self._is_predefined = False
     def is_complete(self) -> bool:
         """Check if this cell is complete; if it has only one possibility."""
         return self._numbers.count(True) == 1
@@ -86,11 +90,15 @@ class Cell():
                 self._numbers[i] = True
             else:
                 self._numbers[i] = False
+        self._is_predefined = True
     def get(self) -> int:
         """Get the value for this cell. Returns zero if not yet complete."""
         if not self.is_complete():
             return 0
         return self._numbers.index(True)+1
+    def predefined(self) -> bool:
+        """Check if the cell is a predefined cell"""
+        return self._is_predefined
     def remove(self, val: int) -> None:
         """Remove the number 'val' from the possible numbers for this cell."""
         if val not in range(1, 10):

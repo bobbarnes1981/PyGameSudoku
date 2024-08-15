@@ -36,7 +36,8 @@ COL_WHITE = (255,255,255)
 COL_LINE = SOLARIZED_BASE01
 COL_BACK = SOLARIZED_BASE03
 COL_BACK2 = SOLARIZED_BASE03
-COL_TEXT = SOLARIZED_BASE1
+COL_TEXT0 = SOLARIZED_BASE2
+COL_TEXT1 = SOLARIZED_BASE1
 COL_TEXT2 = SOLARIZED_BLUE
 COL_TEXT3 = SOLARIZED_GREEN
 COL_CHECK = SOLARIZED_BASE02
@@ -330,7 +331,10 @@ class App():
         if self._grid.is_complete_cell(row, col):
             left += 15
             top += 10
-            img = self.font_l.render(str(self._grid.get(row, col)), True, COL_TEXT)
+            colour = COL_TEXT1
+            if self._grid.predefined(row, col):
+                colour = COL_TEXT0
+            img = self.font_l.render(str(self._grid.get(row, col)), True, colour)
             self._display_surf.blit(img, (left, top))
         else:
             left += 5
