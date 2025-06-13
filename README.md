@@ -3,6 +3,12 @@
 ## run
 
 ```bash
+python3 -m venv .venv
+.venv/scripts/activate
+pip install -r requirements.txt
+```
+
+```bash
 python3 sudoku sudoku.json --delay 0.1 --logging INFO
 ```
 ## TODO
