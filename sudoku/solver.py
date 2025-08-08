@@ -88,7 +88,7 @@ class SudokuCheckerRow:
         if self._counter_col >= 9:
             self._counter_col = -1
             ret = True
-        logging.info('check row %i,%i', self._check_cell_row, self._counter_col)
+        logging.info('examining cell %i,%i', self._counter_col, self._check_cell_row)
         if self._check_cell_col != self._counter_col:
             if not grid.is_complete_cell(self._check_cell_row, self._counter_col):
                 grid.remove(self._check_cell_row,
@@ -136,7 +136,7 @@ class SudokuCheckerCol:
         if self._counter_row >= 9:
             self._counter_row = -1
             ret = True
-        logging.info('check col %i,%i', self._counter_row, self._check_cell_col)
+        logging.info('examining cell %i,%i', self._counter_row, self._check_cell_col)
         if self._check_cell_row != self._counter_row:
             if not grid.is_complete_cell(self._counter_row, self._check_cell_col):
                 grid.remove(self._counter_row,
@@ -336,9 +336,11 @@ class App():
         return False
     def check_cell(self) -> bool:
         """Based on the current _checking state, check the required area of the grid."""
-        logging.info('check cell %i,%i', self._checkers[self._checking].get_row(), self._checkers[self._checking].get_col())
+        logging.info('checking relationships for cell %i,%i', self._checkers[self._checking].get_row(), self._checkers[self._checking].get_col())
         if not self._grid.is_complete_cell(self._checkers[self._checking].get_row(), self._checkers[self._checking].get_col()):
+            logging.info('cell %i,%i not complete, skipping', self._checkers[self._checking].get_row(), self._checkers[self._checking].get_col())
             return True
+        logging.info('cell %i,%i complete, running checks', self._checkers[self._checking].get_row(), self._checkers[self._checking].get_col())
         
         self._render_check = True
         if self._checkers[self._checking].is_complete(self._grid):
