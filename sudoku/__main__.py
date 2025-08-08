@@ -48,12 +48,12 @@ if __name__ == '__main__':
     a.on_execute()
 
     if a.is_complete():
-        output_file = "solved-{0}".format(args.file_path)
-        with open(output_file, 'w') as f:
+        OUTPUT_FILE = f"solved-{args.file_path}"
+        with open(OUTPUT_FILE, 'w') as f:
             rows = a.get_solution()
             f.write('[\n')
             for r in range(9):
-                f.write("    {0}".format(rows[r]))
+                f.write(f"    {rows[r]}")
                 if r < 8:
                     f.write(',')
                 f.write('\n')
