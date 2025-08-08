@@ -44,24 +44,28 @@ COL_CHECK = SOLARIZED_BASE02
 COL_CHECKING = SOLARIZED_MAGENTA
 COL_AREA = SOLARIZED_YELLOW
 
+class SudokuConfigurationException(Exception):
+    """Sudoku configuration exception"""
+
+class SudokuDataException(Exception):
+    """Sudoku data exception"""
+
 if CELL_THICKNESS%2 == 0:
-    raise Exception("CELL_THICKNESS must be odd")
+    raise SudokuConfigurationException("CELL_THICKNESS must be odd")
 if GRID_THICKNESS%2 == 0:
-    raise Exception("GRID_THICKNESS must be odd")
+    raise SudokuConfigurationException("GRID_THICKNESS must be odd")
 
 class App():
     """Represents the pygame application."""
-    def __init__(self, data, delay: float, exit: bool) -> None:
+    def __init__(self, data, delay: float, exit_on_complete: bool) -> None:
         self._delay = delay
-        self._exit = exit
+        self._exit_on_complete = exit_on_complete
         self._grid = sudoku.Grid()
         if len(data) != 9:
-            raise Exception("Incorrect number of rows {0}"
-                            .format(len(data)))
+            raise SudokuDataException(f"Incorrect number of rows {len(data)}")
         for row in range(0, 9):
             if len(data[row]) != 9:
-                raise Exception("Incorrect number of cols {0} in row {1}"
-                                .format(len(data[row]), row))
+                raise SudokuDataException(f"Incorrect number of cols {len(data[row])} in row {row}")
         for row in range(0, 9):
             for col in range(0, 9):
                 if data[row][col] != 0:
@@ -86,9 +90,11 @@ class App():
         self._complete = False
         self.font_s = None
         self.font_l = None
-    def is_complete(self):
+    def is_complete(self) -> bool:
+        """Check if is complete"""
         return self._complete
     def get_solution(self):
+        """Get the solution"""
         return self._grid.to_lists()
     def on_init(self) -> bool:
         """Initialise solver."""
@@ -121,7 +127,7 @@ class App():
             if not self._complete:
                 if self.check_grid():
                     self._complete = True
-                    if self._exit:
+                    if self._exit_on_complete:
                         self._running = False
     def check_grid(self) -> bool:
         """Check the grid until completed."""
@@ -269,13 +275,15 @@ class App():
         if self._checking == "ROW":
             left = self.get_left_for_cell_index(self._counter_col)
             top = self.get_top_for_cell_index(self._check_cell_row)
-        if self._checking == "COL":
+        elif self._checking == "COL":
             left = self.get_left_for_cell_index(self._check_cell_col)
             top = self.get_top_for_cell_index(self._counter_row)
-        if self._checking == "SUB":
+        elif self._checking == "SUB":
             (row_val, col_val) = self.get_sub_vals()
             left = self.get_left_for_cell_index(col_val)
             top = self.get_top_for_cell_index(row_val)
+        else:
+            raise Exception(f"Invalid checking {self._checking}")
         width = CELL_WIDTH*3
         height = CELL_HEIGHT*3
         pygame.draw.rect(self._display_surf, COL_CHECK, (left, top, width, height), 0)
@@ -370,9 +378,9 @@ class App():
     def draw_cell(self, row: int, col: int) -> None:
         """Draw a single cell for (row, col)."""
         if self._grid.is_complete_cell(row, col):
-            colour = (COL_BACK)
+            colour = COL_BACK
         else:
-            colour = (COL_BACK2)
+            colour = COL_BACK2
         left = self.get_left_for_cell_index(col)
         top = self.get_top_for_cell_index(row)
         width = CELL_WIDTH*3
