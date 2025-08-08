@@ -55,6 +55,177 @@ if CELL_THICKNESS%2 == 0:
 if GRID_THICKNESS%2 == 0:
     raise SudokuConfigurationException("GRID_THICKNESS must be odd")
 
+def get_left_for_cell_index(cell_x_index: int):
+    """Calculate the left pixel for the cell x index."""
+    return ((CELL_WIDTH*3*cell_x_index)+
+            (cell_x_index*CELL_THICKNESS)+
+            ((cell_x_index//3)*(GRID_THICKNESS-CELL_THICKNESS)))
+
+def get_top_for_cell_index(cell_y_index: int):
+    """Calculate the top pixel for the cell y index."""
+    return ((CELL_HEIGHT*3*cell_y_index)+
+            (cell_y_index*CELL_THICKNESS)+
+            ((cell_y_index//3)*(GRID_THICKNESS-CELL_THICKNESS)))
+
+def get_width():
+    return (CELL_WIDTH*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
+
+def get_height():
+    return (CELL_HEIGHT*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
+
+class SudokuCheckerRow:
+    def __init__(self):
+        self._counter_row = -1
+        self._counter_col = -1
+
+        self._check_cell_row = 0
+        self._check_cell_col = 0
+
+    def check(self, grid:sudoku.Grid):
+        """Check the cells within the row."""
+        ret = False
+        self._counter_col += 1
+        if self._counter_col >= 9:
+            self._counter_col = -1
+            ret = True
+        logging.info('check row %i,%i', self._check_cell_row, self._counter_col)
+        if self._check_cell_col != self._counter_col:
+            if not grid.is_complete_cell(self._check_cell_row, self._counter_col):
+                grid.remove(self._check_cell_row,
+                            self._counter_col,
+                            grid.get(self._check_cell_row, self._check_cell_col))
+        return ret
+    def is_complete(self, grid:sudoku.Grid) -> bool:
+        return grid.is_complete_row(self._check_cell_row)
+    def get_left_and_top(self):
+        left = get_left_for_cell_index(self._counter_col)
+        top = get_top_for_cell_index(self._check_cell_row)
+        return left, top
+    def get_check_rects(self) -> list[tuple]:
+        top = get_top_for_cell_index(self._check_cell_row)
+        return [
+            (0, top, get_width(), CELL_HEIGHT*3)
+        ]
+    def is_cell(self, row:int, col:int) -> bool:
+        return self._check_cell_row == row and self._counter_col == col
+    def inc_row(self):
+        self._check_cell_row+=1
+    def inc_col(self):
+        self._check_cell_col+=1
+    def get_row(self) -> int:
+        return self._check_cell_row
+    def get_col(self) -> int:
+        return self._check_cell_col
+    def reset_row(self):
+        self._check_cell_row = 0
+    def reset_col(self):
+        self._check_cell_col = 0
+
+class SudokuCheckerCol:
+    def __init__(self):
+        self._counter_row = -1
+        self._counter_col = -1
+
+        self._check_cell_row = 0
+        self._check_cell_col = 0
+
+    def check(self, grid:sudoku.Grid):
+        """Check the cells within the column."""
+        ret = False
+        self._counter_row += 1
+        if self._counter_row >= 9:
+            self._counter_row = -1
+            ret = True
+        logging.info('check col %i,%i', self._counter_row, self._check_cell_col)
+        if self._check_cell_row != self._counter_row:
+            if not grid.is_complete_cell(self._counter_row, self._check_cell_col):
+                grid.remove(self._counter_row,
+                            self._check_cell_col,
+                            grid.get(self._check_cell_row, self._check_cell_col))
+        return ret
+    def is_complete(self, grid:sudoku.Grid) -> bool:
+        return grid.is_complete_col(self._check_cell_col)
+    def get_left_and_top(self):
+        left = get_left_for_cell_index(self._check_cell_col)
+        top = get_top_for_cell_index(self._counter_row)
+        return left, top
+    def get_check_rects(self) -> list[tuple]:
+        left = get_left_for_cell_index(self._check_cell_col)
+        return [
+            (left, 0, CELL_WIDTH*3, get_height())
+        ]
+    def is_cell(self, row:int, col:int) -> bool:
+        return self._counter_row == row and self._check_cell_col == col
+    def inc_row(self):
+        self._check_cell_row+=1
+    def inc_col(self):
+        self._check_cell_col+=1
+    def get_row(self) -> int:
+        return self._check_cell_row
+    def get_col(self) -> int:
+        return self._check_cell_col
+    def reset_row(self):
+        self._check_cell_row = 0
+    def reset_col(self):
+        self._check_cell_col = 0
+
+#class SudokuCheckerSub:
+#    def __init__(self):
+#        self._counter_row = -1
+#        self._counter_col = -1
+#
+#    def check(self):
+#        """Check the cells within the sub grid."""
+#        if self._counter_sub_col == -1:
+#            self._counter_sub_col+=1
+#        if self._counter_sub_row == -1:
+#            self._counter_sub_row+=1
+#        (row_val, col_val) = self.get_sub_vals()
+#        logging.info('check sub %i,%i', row_val, col_val)
+#        if self._check_cell_row != row_val or self._check_cell_col != col_val:
+#            if not self._grid.is_complete_cell(row_val, col_val):
+#                self._grid.remove(row_val,
+#                                  col_val,
+#                                  self._grid.get(self._check_cell_row, self._check_cell_col))
+#    def is_complete(self, grid:sudoku.Grid, row:int, col:int) -> bool:
+#        if grid.is_complete_sub(row, col):
+#            self._counter_sub_col += 1
+#            if self._counter_sub_col >= 3:
+#                self._counter_sub_col = -1
+#                self._counter_sub_row += 1
+#                if self._counter_sub_row >= 3:
+#                    self._counter_sub_row = -1
+#                    self._checking = "ROW"
+#                    return True
+#        return False
+#    def get_left_and_top(self):
+#        (row_val, col_val) = self.get_sub_vals()
+#        left = get_left_for_cell_index(col_val)
+#        top = get_top_for_cell_index(row_val)
+#        return left, top
+#    def get_check_rects(self) -> list[tuple]:
+#        (row_offset, col_offset) = self.get_sub_offsets()
+#        left = get_left_for_cell_index(col_offset)
+#        top = get_top_for_cell_index(row_offset)
+#        return [
+#            (left, top, SUB_WIDTH, SUB_HEIGHT)
+#        ]
+#    def is_cell(self, row:int, col:int) -> bool:
+#        (sub_row, sub_col) = self.get_sub_vals()
+#        return sub_row == row and sub_col == col
+#    def get_sub_offsets(self):
+#        """Get the top and left indexes of the sub grid that
+#           contains (check_cell_row, check_cell_col)."""
+#        col_offset = (self._check_cell_col // 3) * 3
+#        row_offset = (self._check_cell_row // 3) * 3
+#        return (row_offset, col_offset)
+#    def get_sub_vals(self):
+#        """Get the global (row, col) indexes for the sub grid local indexes."""
+#        (row_offset, col_offset) = self.get_sub_offsets()
+#        col_val = col_offset + self._counter_sub_col
+#        row_val = row_offset + self._counter_sub_row
+#        return (row_val, col_val)
+
 class App():
     """Represents the pygame application."""
     def __init__(self, data, delay: float, exit_on_complete: bool) -> None:
@@ -73,23 +244,22 @@ class App():
 
         self._running = True
         self._display_surf = None
-        self._width = (CELL_WIDTH*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
-        self._height = (CELL_HEIGHT*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
-        self._size = (self._width, self._height)
+        self._size = (get_width(), get_height())
         self._time = time.time()
         self._counter = 0
-        self._checking = "ROW"
-        self._counter_row = -1
-        self._counter_col = -1
+        self._checking = 0
         self._counter_sub_row = -1
         self._counter_sub_col = -1
-        self._check_cell_row = 0
-        self._check_cell_col = 0
         self._render_check = True
         self._render_selected = True
         self._complete = False
         self.font_s = None
         self.font_l = None
+        self._checkers = [
+            SudokuCheckerRow(),
+            SudokuCheckerCol(),
+            #SudokuCheckerSub(),
+        ]
     def is_complete(self) -> bool:
         """Check if is complete"""
         return self._complete
@@ -140,102 +310,35 @@ class App():
         finished_check = self.check_cell()
         logging.info('finished check %s', finished_check)
         if finished_check:
-            self._check_cell_col+=1
-            logging.info('increment col %i', self._check_cell_col)
-            if self._check_cell_col >= 9:
-                self._check_cell_col = 0
-                self._check_cell_row+=1
-                logging.info('increment row %i', self._check_cell_row)
-                if self._check_cell_row >= 9:
-                    self._check_cell_row = 0
+            self._checkers[self._checking].inc_col()
+            logging.info('increment col %i', self._checkers[self._checking].get_col())
+            if self._checkers[self._checking].get_col() >= 9:
+                self._checkers[self._checking].reset_col()
+                self._checkers[self._checking].inc_row()
+                logging.info('increment row %i', self._checkers[self._checking].get_row())
+                if self._checkers[self._checking].get_row() >= 9:
+                    self._checkers[self._checking].reset_row()
         return False
     def check_cell(self) -> bool:
         """Based on the current _checking state, check the required area of the grid."""
-        logging.info('check cell %i,%i', self._check_cell_row, self._check_cell_col)
-        if not self._grid.is_complete_cell(self._check_cell_row, self._check_cell_col):
+        logging.info('check cell %i,%i', self._checkers[self._checking].get_row(), self._checkers[self._checking].get_col())
+        if not self._grid.is_complete_cell(self._checkers[self._checking].get_row(), self._checkers[self._checking].get_col()):
             return True
-        if self._checking == "ROW":
-            self._render_check = True
-            if self._grid.is_complete_row(self._check_cell_row):
-                self._checking = "COL"
-                self._render_check = False
-                return False
-            self.check_cell_row()
-        if self._checking == "COL":
-            self._render_check = True
-            if self._grid.is_complete_col(self._check_cell_col):
-                self._checking = "SUB"
-                self._render_check = False
-                return False
-            self.check_cell_col()
-        if self._checking == "SUB":
-            self._render_check = True
-            if self._grid.is_complete_sub(self._check_cell_row, self._check_cell_col):
-                self._checking = "ROW"
-                self._render_check = False
-                # completed
+        
+        self._render_check = True
+        if self._checkers[self._checking].is_complete(self._grid):
+            self._checking+=1
+            if self._checking >= len(self._checkers):
                 return True
-            self._counter_sub_col += 1
-            if self._counter_sub_col >= 3:
-                self._counter_sub_col = -1
-                self._counter_sub_row += 1
-                if self._counter_sub_row >= 3:
-                    self._counter_sub_row = -1
-                    self._checking = "ROW"
-                    # completed
-                    return True
-            self.check_cell_sub()
+            self._render_check = False
+            return False
+        if self._checkers[self._checking].check(self._grid):
+            self._checking+=1
+            if self._checking >= len(self._checkers):
+                return True
+
         # not completed
         return False
-    def check_cell_row(self) -> None:
-        """Check the cells within the row."""
-        self._counter_col += 1
-        if self._counter_col >= 9:
-            self._counter_col = -1
-            self._checking = "COL"
-        logging.info('check row %i,%i', self._check_cell_row, self._counter_col)
-        if self._check_cell_col != self._counter_col:
-            if not self._grid.is_complete_cell(self._check_cell_row, self._counter_col):
-                self._grid.remove(self._check_cell_row,
-                                  self._counter_col,
-                                  self._grid.get(self._check_cell_row, self._check_cell_col))
-    def check_cell_col(self) -> None:
-        """Check the cells within the column."""
-        self._counter_row += 1
-        if self._counter_row >= 9:
-            self._counter_row = -1
-            self._checking = "SUB"
-        logging.info('check col %i,%i', self._counter_row, self._check_cell_col)
-        if self._check_cell_row != self._counter_row:
-            if not self._grid.is_complete_cell(self._counter_row, self._check_cell_col):
-                self._grid.remove(self._counter_row,
-                                  self._check_cell_col,
-                                  self._grid.get(self._check_cell_row, self._check_cell_col))
-    def check_cell_sub(self) -> None:
-        """Check the cells within the sub grid."""
-        if self._counter_sub_col == -1:
-            self._counter_sub_col+=1
-        if self._counter_sub_row == -1:
-            self._counter_sub_row+=1
-        (row_val, col_val) = self.get_sub_vals()
-        logging.info('check sub %i,%i', row_val, col_val)
-        if self._check_cell_row != row_val or self._check_cell_col != col_val:
-            if not self._grid.is_complete_cell(row_val, col_val):
-                self._grid.remove(row_val,
-                                  col_val,
-                                  self._grid.get(self._check_cell_row, self._check_cell_col))
-    def get_sub_offsets(self):
-        """Get the top and left indexes of the sub grid that
-           contains (check_cell_row, check_cell_col)."""
-        col_offset = (self._check_cell_col // 3) * 3
-        row_offset = (self._check_cell_row // 3) * 3
-        return (row_offset, col_offset)
-    def get_sub_vals(self):
-        """Get the global (row, col) indexes for the sub grid local indexes."""
-        (row_offset, col_offset) = self.get_sub_offsets()
-        col_val = col_offset + self._counter_sub_col
-        row_val = row_offset + self._counter_sub_row
-        return (row_val, col_val)
     def on_render(self) -> None:
         """Render the game."""
         self._display_surf.fill(COL_WHITE)
@@ -246,22 +349,12 @@ class App():
         self.draw_checking_area()
         self.draw_selected_cell()
         pygame.display.update()
-    def get_left_for_cell_index(self, cell_x_index: int):
-        """Calculate the left pixel for the cell x index."""
-        return ((CELL_WIDTH*3*cell_x_index)+
-                (cell_x_index*CELL_THICKNESS)+
-                ((cell_x_index//3)*(GRID_THICKNESS-CELL_THICKNESS)))
-    def get_top_for_cell_index(self, cell_y_index: int):
-        """Calculate the top pixel for the cell y index."""
-        return ((CELL_HEIGHT*3*cell_y_index)+
-                (cell_y_index*CELL_THICKNESS)+
-                ((cell_y_index//3)*(GRID_THICKNESS-CELL_THICKNESS)))
     def draw_selected_cell(self) -> None:
         """Draw border on the cell being checked."""
         if not self._render_selected:
             return
-        left = self.get_left_for_cell_index(self._check_cell_col)
-        top = self.get_top_for_cell_index(self._check_cell_row)
+        left = get_left_for_cell_index(self._checkers[self._checking].get_col())
+        top = get_top_for_cell_index(self._checkers[self._checking].get_row())
         width = CELL_WIDTH*3
         height = CELL_HEIGHT*3
         pygame.draw.rect(self._display_surf,
@@ -272,18 +365,7 @@ class App():
         """Set the background colour on the cell being checked."""
         if not self._render_check:
             return
-        if self._checking == "ROW":
-            left = self.get_left_for_cell_index(self._counter_col)
-            top = self.get_top_for_cell_index(self._check_cell_row)
-        elif self._checking == "COL":
-            left = self.get_left_for_cell_index(self._check_cell_col)
-            top = self.get_top_for_cell_index(self._counter_row)
-        elif self._checking == "SUB":
-            (row_val, col_val) = self.get_sub_vals()
-            left = self.get_left_for_cell_index(col_val)
-            top = self.get_top_for_cell_index(row_val)
-        else:
-            raise Exception(f"Invalid checking {self._checking}")
+        (left, top) = self._checkers[self._checking].get_left_and_top()
         width = CELL_WIDTH*3
         height = CELL_HEIGHT*3
         pygame.draw.rect(self._display_surf, COL_CHECK, (left, top, width, height), 0)
@@ -291,37 +373,23 @@ class App():
         """Draw border on the area being checked."""
         if not self._render_check:
             return
-        if self._checking == "ROW":
-            top = self.get_top_for_cell_index(self._check_cell_row)
+        rects = self._checkers[self._checking].get_check_rects()
+        for rect in rects:
             pygame.draw.rect(self._display_surf,
-                             COL_AREA,
-                             (0, top, self._width, CELL_HEIGHT*3),
-                             AREA_THICKNESS)
-        if self._checking == "COL":
-            left = self.get_left_for_cell_index(self._check_cell_col)
-            pygame.draw.rect(self._display_surf,
-                             COL_AREA,
-                             (left, 0, CELL_WIDTH*3, self._height),
-                             AREA_THICKNESS)
-        if self._checking == "SUB":
-            (row_offset, col_offset) = self.get_sub_offsets()
-            left = self.get_left_for_cell_index(col_offset)
-            top = self.get_top_for_cell_index(row_offset)
-            pygame.draw.rect(self._display_surf,
-                             COL_AREA,
-                             (left, top, SUB_WIDTH, SUB_HEIGHT),
-                             AREA_THICKNESS)
+                        COL_AREA,
+                        rect,
+                        AREA_THICKNESS)
     def draw_lines(self) -> None:
         """Draw the grid lines."""
         right = (CELL_WIDTH*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
         bottom = (CELL_HEIGHT*3*9)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
         for row in range(1, 9):
             v_thickness = GRID_THICKNESS if row % 3 == 0 else CELL_THICKNESS
-            v_line = self.get_top_for_cell_index(row)-(v_thickness//2)-1
+            v_line = get_top_for_cell_index(row)-(v_thickness//2)-1
             pygame.draw.line(self._display_surf, COL_LINE, (0,v_line), (right,v_line), v_thickness)
             for col in range(1, 9):
                 h_thickness = GRID_THICKNESS if col % 3 == 0 else CELL_THICKNESS
-                h_line = self.get_left_for_cell_index(col)-(h_thickness//2)-1
+                h_line = get_left_for_cell_index(col)-(h_thickness//2)-1
                 pygame.draw.line(self._display_surf,
                                  COL_LINE,
                                 (h_line, 0),
@@ -334,8 +402,8 @@ class App():
                 self.draw_number(row, col)
     def draw_number(self, row: int, col: int) -> None:
         """Draw the number for cell (row, col)."""
-        left = self.get_left_for_cell_index(col)
-        top = self.get_top_for_cell_index(row)
+        left = get_left_for_cell_index(col)
+        top = get_top_for_cell_index(row)
         if self._grid.is_complete_cell(row, col):
             left += 15
             top += 10
@@ -351,18 +419,7 @@ class App():
             for subrow in range(0, 3):
                 for subcol in range(0, 3):
                     colour = COL_TEXT2
-                    if (self._checking == "ROW" and
-                        self._check_cell_row == row and
-                        self._counter_col == col):
-                        colour = COL_TEXT3
-                    if (self._checking == "COL" and
-                        self._counter_row == row and
-                        self._check_cell_col == col):
-                        colour = COL_TEXT3
-                    (sub_row, sub_col) = self.get_sub_vals()
-                    if (self._checking == "SUB" and
-                        sub_row == row and
-                        sub_col == col):
+                    if self._checkers[self._checking].is_cell(row, col):
                         colour = COL_TEXT3
                     num_text = str(count if self._grid.has(row, col, count) else ' ')
                     img = self.font_s.render(num_text, True, colour)
@@ -381,8 +438,8 @@ class App():
             colour = COL_BACK
         else:
             colour = COL_BACK2
-        left = self.get_left_for_cell_index(col)
-        top = self.get_top_for_cell_index(row)
+        left = get_left_for_cell_index(col)
+        top = get_top_for_cell_index(row)
         width = CELL_WIDTH*3
         height = CELL_HEIGHT*3
         pygame.draw.rect(self._display_surf, colour, (left, top, width, height), 0)
