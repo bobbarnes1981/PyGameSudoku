@@ -169,62 +169,77 @@ class SudokuCheckerCol:
     def reset_col(self):
         self._check_cell_col = 0
 
-#class SudokuCheckerSub:
-#    def __init__(self):
-#        self._counter_row = -1
-#        self._counter_col = -1
-#
-#    def check(self):
-#        """Check the cells within the sub grid."""
-#        if self._counter_sub_col == -1:
-#            self._counter_sub_col+=1
-#        if self._counter_sub_row == -1:
-#            self._counter_sub_row+=1
-#        (row_val, col_val) = self.get_sub_vals()
-#        logging.info('check sub %i,%i', row_val, col_val)
-#        if self._check_cell_row != row_val or self._check_cell_col != col_val:
-#            if not self._grid.is_complete_cell(row_val, col_val):
-#                self._grid.remove(row_val,
-#                                  col_val,
-#                                  self._grid.get(self._check_cell_row, self._check_cell_col))
-#    def is_complete(self, grid:sudoku.Grid, row:int, col:int) -> bool:
-#        if grid.is_complete_sub(row, col):
-#            self._counter_sub_col += 1
-#            if self._counter_sub_col >= 3:
-#                self._counter_sub_col = -1
-#                self._counter_sub_row += 1
-#                if self._counter_sub_row >= 3:
-#                    self._counter_sub_row = -1
-#                    self._checking = "ROW"
-#                    return True
-#        return False
-#    def get_left_and_top(self):
-#        (row_val, col_val) = self.get_sub_vals()
-#        left = get_left_for_cell_index(col_val)
-#        top = get_top_for_cell_index(row_val)
-#        return left, top
-#    def get_check_rects(self) -> list[tuple]:
-#        (row_offset, col_offset) = self.get_sub_offsets()
-#        left = get_left_for_cell_index(col_offset)
-#        top = get_top_for_cell_index(row_offset)
-#        return [
-#            (left, top, SUB_WIDTH, SUB_HEIGHT)
-#        ]
-#    def is_cell(self, row:int, col:int) -> bool:
-#        (sub_row, sub_col) = self.get_sub_vals()
-#        return sub_row == row and sub_col == col
-#    def get_sub_offsets(self):
-#        """Get the top and left indexes of the sub grid that
-#           contains (check_cell_row, check_cell_col)."""
-#        col_offset = (self._check_cell_col // 3) * 3
-#        row_offset = (self._check_cell_row // 3) * 3
-#        return (row_offset, col_offset)
-#    def get_sub_vals(self):
-#        """Get the global (row, col) indexes for the sub grid local indexes."""
-#        (row_offset, col_offset) = self.get_sub_offsets()
-#        col_val = col_offset + self._counter_sub_col
-#        row_val = row_offset + self._counter_sub_row
-#        return (row_val, col_val)
+class SudokuCheckerSub:
+    def __init__(self):
+        self._counter_row = -1
+        self._counter_col = -1
+
+        self._check_cell_row = 0
+        self._check_cell_col = 0
+
+    def check(self):
+        """Check the cells within the sub grid."""
+        if self._counter_sub_col == -1:
+            self._counter_sub_col+=1
+        if self._counter_sub_row == -1:
+            self._counter_sub_row+=1
+        (row_val, col_val) = self.get_sub_vals()
+        logging.info('check sub %i,%i', row_val, col_val)
+        if self._check_cell_row != row_val or self._check_cell_col != col_val:
+            if not self._grid.is_complete_cell(row_val, col_val):
+                self._grid.remove(row_val,
+                                  col_val,
+                                  self._grid.get(self._check_cell_row, self._check_cell_col))
+    def is_complete(self, grid:sudoku.Grid, row:int, col:int) -> bool:
+        if grid.is_complete_sub(row, col):
+            self._counter_sub_col += 1
+            if self._counter_sub_col >= 3:
+                self._counter_sub_col = -1
+                self._counter_sub_row += 1
+                if self._counter_sub_row >= 3:
+                    self._counter_sub_row = -1
+                    self._checking = "ROW"
+                    return True
+        return False
+    def get_left_and_top(self):
+        (row_val, col_val) = self.get_sub_vals()
+        left = get_left_for_cell_index(col_val)
+        top = get_top_for_cell_index(row_val)
+        return left, top
+    def get_check_rects(self) -> list[tuple]:
+        (row_offset, col_offset) = self.get_sub_offsets()
+        left = get_left_for_cell_index(col_offset)
+        top = get_top_for_cell_index(row_offset)
+        return [
+            (left, top, SUB_WIDTH, SUB_HEIGHT)
+        ]
+    def is_cell(self, row:int, col:int) -> bool:
+        (sub_row, sub_col) = self.get_sub_vals()
+        return sub_row == row and sub_col == col
+    def inc_row(self):
+        self._check_cell_row+=1
+    def inc_col(self):
+        self._check_cell_col+=1
+    def get_row(self) -> int:
+        return self._check_cell_row
+    def get_col(self) -> int:
+        return self._check_cell_col
+    def reset_row(self):
+        self._check_cell_row = 0
+    def reset_col(self):
+        self._check_cell_col = 0
+    def get_sub_offsets(self):
+        """Get the top and left indexes of the sub grid that
+           contains (check_cell_row, check_cell_col)."""
+        col_offset = (self._check_cell_col // 3) * 3
+        row_offset = (self._check_cell_row // 3) * 3
+        return (row_offset, col_offset)
+    def get_sub_vals(self):
+        """Get the global (row, col) indexes for the sub grid local indexes."""
+        (row_offset, col_offset) = self.get_sub_offsets()
+        col_val = col_offset + self._counter_sub_col
+        row_val = row_offset + self._counter_sub_row
+        return (row_val, col_val)
 
 class App():
     """Represents the pygame application."""
@@ -258,7 +273,7 @@ class App():
         self._checkers = [
             SudokuCheckerRow(),
             SudokuCheckerCol(),
-            #SudokuCheckerSub(),
+            SudokuCheckerSub(),
         ]
     def is_complete(self) -> bool:
         """Check if is complete"""
