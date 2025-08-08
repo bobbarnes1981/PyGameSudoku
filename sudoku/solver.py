@@ -73,28 +73,56 @@ def get_width():
 def get_height():
     return (CELL_HEIGHT*9*3)+(8*CELL_THICKNESS)+(2*(GRID_THICKNESS-CELL_THICKNESS))
 
-class SudokuCheckerRow:
+class SudokuChecker:
     def __init__(self):
         self._counter_row = -1
         self._counter_col = -1
-
         self._check_cell_row = 0
         self._check_cell_col = 0
+        self._counter_sub_row = -1
+        self._counter_sub_col = -1
+    def inc_row(self):
+        self._check_cell_row+=1
+        logging.info('increment row %i', self._check_cell_row)
+    def inc_col(self):
+        self._check_cell_col+=1
+        logging.info('increment col %i', self._check_cell_col)
+    def get_row(self) -> int:
+        return self._check_cell_row
+    def get_col(self) -> int:
+        return self._check_cell_col
+    def reset_row(self):
+        self._check_cell_row = 0
+        logging.info('reset row %i', self._check_cell_row)
+    def reset_col(self):
+        self._check_cell_col = 0
+        logging.info('reset col %i', self._check_cell_col)
 
-    def check(self, grid:sudoku.Grid):
-        """Check the cells within the row."""
-        ret = False
+class SudokuCheckerRow(SudokuChecker):
+    def __init__(self):
+        SudokuChecker.__init__(self)
+    def __increment_counter(self):
         self._counter_col += 1
+        logging.info('col counter %i', self._counter_col)
         if self._counter_col >= 9:
             self._counter_col = -1
-            ret = True
+            logging.info('col counter %i', self._counter_col)
+            return True
+    def check(self, grid:sudoku.Grid):
+        """Check the cells within the row."""
+        if self.__increment_counter():
+            return True
         logging.info('examining cell %i,%i', self._counter_col, self._check_cell_row)
         if self._check_cell_col != self._counter_col:
             if not grid.is_complete_cell(self._check_cell_row, self._counter_col):
                 grid.remove(self._check_cell_row,
                             self._counter_col,
                             grid.get(self._check_cell_row, self._check_cell_col))
-        return ret
+            else:
+                logging.info('skipping completed cell')
+        else:
+            logging.info('skipping target cell')
+        return False
     def is_complete(self, grid:sudoku.Grid) -> bool:
         return grid.is_complete_row(self._check_cell_row)
     def get_left_and_top(self):
@@ -108,41 +136,28 @@ class SudokuCheckerRow:
         ]
     def is_cell(self, row:int, col:int) -> bool:
         return self._check_cell_row == row and self._counter_col == col
-    def inc_row(self):
-        self._check_cell_row+=1
-    def inc_col(self):
-        self._check_cell_col+=1
-    def get_row(self) -> int:
-        return self._check_cell_row
-    def get_col(self) -> int:
-        return self._check_cell_col
-    def reset_row(self):
-        self._check_cell_row = 0
-    def reset_col(self):
-        self._check_cell_col = 0
 
-class SudokuCheckerCol:
+class SudokuCheckerCol(SudokuChecker):
     def __init__(self):
-        self._counter_row = -1
-        self._counter_col = -1
-
-        self._check_cell_row = 0
-        self._check_cell_col = 0
-
-    def check(self, grid:sudoku.Grid):
-        """Check the cells within the column."""
-        ret = False
+        SudokuChecker.__init__(self)
+    def __increment_counter(self):
         self._counter_row += 1
+        logging.info('row counter %i', self._counter_row)
         if self._counter_row >= 9:
             self._counter_row = -1
-            ret = True
+            logging.info('row counter %i', self._counter_row)
+            return True
+    def check(self, grid:sudoku.Grid):
+        """Check the cells within the column."""
+        if self.__increment_counter():
+            return True
         logging.info('examining cell %i,%i', self._counter_row, self._check_cell_col)
         if self._check_cell_row != self._counter_row:
             if not grid.is_complete_cell(self._counter_row, self._check_cell_col):
                 grid.remove(self._counter_row,
                             self._check_cell_col,
                             grid.get(self._check_cell_row, self._check_cell_col))
-        return ret
+        return False
     def is_complete(self, grid:sudoku.Grid) -> bool:
         return grid.is_complete_col(self._check_cell_col)
     def get_left_and_top(self):
@@ -156,28 +171,12 @@ class SudokuCheckerCol:
         ]
     def is_cell(self, row:int, col:int) -> bool:
         return self._counter_row == row and self._check_cell_col == col
-    def inc_row(self):
-        self._check_cell_row+=1
-    def inc_col(self):
-        self._check_cell_col+=1
-    def get_row(self) -> int:
-        return self._check_cell_row
-    def get_col(self) -> int:
-        return self._check_cell_col
-    def reset_row(self):
-        self._check_cell_row = 0
-    def reset_col(self):
-        self._check_cell_col = 0
 
-class SudokuCheckerSub:
+class SudokuCheckerSub(SudokuChecker):
     def __init__(self):
-        self._counter_row = -1
-        self._counter_col = -1
+        SudokuChecker.__init__(self)
 
-        self._check_cell_row = 0
-        self._check_cell_col = 0
-
-    def check(self):
+    def check(self, grid:sudoku.Grid):
         """Check the cells within the sub grid."""
         if self._counter_sub_col == -1:
             self._counter_sub_col+=1
@@ -186,19 +185,19 @@ class SudokuCheckerSub:
         (row_val, col_val) = self.get_sub_vals()
         logging.info('check sub %i,%i', row_val, col_val)
         if self._check_cell_row != row_val or self._check_cell_col != col_val:
-            if not self._grid.is_complete_cell(row_val, col_val):
-                self._grid.remove(row_val,
-                                  col_val,
-                                  self._grid.get(self._check_cell_row, self._check_cell_col))
-    def is_complete(self, grid:sudoku.Grid, row:int, col:int) -> bool:
-        if grid.is_complete_sub(row, col):
+            if not grid.is_complete_cell(row_val, col_val):
+                grid.remove(row_val,
+                            col_val,
+                            grid.get(self._check_cell_row, self._check_cell_col))
+    def is_complete(self, grid:sudoku.Grid) -> bool:
+        if grid.is_complete_sub(self._check_cell_row, self._check_cell_col):
             self._counter_sub_col += 1
             if self._counter_sub_col >= 3:
                 self._counter_sub_col = -1
                 self._counter_sub_row += 1
                 if self._counter_sub_row >= 3:
                     self._counter_sub_row = -1
-                    self._checking = "ROW"
+                    #self._checking = "ROW"
                     return True
         return False
     def get_left_and_top(self):
@@ -216,18 +215,6 @@ class SudokuCheckerSub:
     def is_cell(self, row:int, col:int) -> bool:
         (sub_row, sub_col) = self.get_sub_vals()
         return sub_row == row and sub_col == col
-    def inc_row(self):
-        self._check_cell_row+=1
-    def inc_col(self):
-        self._check_cell_col+=1
-    def get_row(self) -> int:
-        return self._check_cell_row
-    def get_col(self) -> int:
-        return self._check_cell_col
-    def reset_row(self):
-        self._check_cell_row = 0
-    def reset_col(self):
-        self._check_cell_col = 0
     def get_sub_offsets(self):
         """Get the top and left indexes of the sub grid that
            contains (check_cell_row, check_cell_col)."""
@@ -263,8 +250,6 @@ class App():
         self._time = time.time()
         self._counter = 0
         self._checking = 0
-        self._counter_sub_row = -1
-        self._counter_sub_col = -1
         self._render_check = True
         self._render_selected = True
         self._complete = False
@@ -326,12 +311,13 @@ class App():
         logging.info('finished check %s', finished_check)
         if finished_check:
             self._checkers[self._checking].inc_col()
-            logging.info('increment col %i', self._checkers[self._checking].get_col())
             if self._checkers[self._checking].get_col() >= 9:
                 self._checkers[self._checking].reset_col()
+                logging.info('reset row')
                 self._checkers[self._checking].inc_row()
                 logging.info('increment row %i', self._checkers[self._checking].get_row())
                 if self._checkers[self._checking].get_row() >= 9:
+                    logging.info('reset col')
                     self._checkers[self._checking].reset_row()
         return False
     def check_cell(self) -> bool:
